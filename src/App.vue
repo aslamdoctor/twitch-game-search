@@ -159,7 +159,6 @@ export default {
 				}
 			}
 			if (search_form_data.search_type == 'channel') {
-				console.log(search_form_data);
 				try {
 					const params = {
 						query: search_form_data.search_keyword,
