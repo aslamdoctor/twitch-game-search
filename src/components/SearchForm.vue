@@ -91,4 +91,8 @@ select {
 	background: url(../assets/icon-cheveron-down.svg) right 5px center no-repeat;
 	background-size: 30px auto;
 }
+select:disabled {
+	cursor: not-allowed;
+	opacity: 0.5;
+}
 </style>
