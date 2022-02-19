@@ -1,4 +1,4 @@
-# vue-game-search
+# Twitch Game Search
 
 ## Project setup
 
