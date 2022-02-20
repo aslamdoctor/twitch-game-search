@@ -1,5 +1,14 @@
 <template>
 	<div>
+		<a
+			class="github-fork-ribbon right-bottom fixed hidden lg:block"
+			href="https://github.com/aslamdoctor/twitch-game-search"
+			target="_blank"
+			data-ribbon="Fork me on GitHub"
+			title="Fork me on GitHub"
+		>
+			Fork me on GitHub
+		</a>
 		<AppHeader @clear-search="clearSearch" />
 		<div class="container mx-auto mt-4 overflow-hidden px-5">
 			<AppSearchForm
