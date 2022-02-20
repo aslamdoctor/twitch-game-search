@@ -50,7 +50,6 @@ export default {
 		streamThumbnail(url) {
 			url = url.replace('{width}', 460);
 			url = url.replace('{height}', 258);
-			//url = url.replace('300x300', '460x258');
 			return url;
 		},
 	},

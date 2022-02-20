@@ -9,14 +9,14 @@
 
 			<AppGamesList
 				:title="gameListTitle"
-				:games="gamesData"
-				v-if="gamesData.length > 0"
+				:games="getGames"
+				v-if="getGames && getGames.length > 0"
 			/>
 
 			<AppStreamList
 				:title="streamListTitle"
-				:streams="streamsData"
-				v-if="streamsData.length > 0"
+				:streams="getChannels"
+				v-if="getChannels && getChannels.length > 0"
 			/>
 
 			<div class="flex justify-center mb-5" v-if="loading">
@@ -69,11 +69,8 @@ export default {
 	},
 	data() {
 		return {
-			access_token: '',
 			gameListTitle: 'Top 10 Games',
 			streamListTitle: 'Top 10 Streams',
-			gamesData: [],
-			streamsData: [],
 			pagination: {},
 			searchFormData: {},
 			clearSearchProp: false,
@@ -88,7 +85,7 @@ export default {
 				client_secret: process.env.VUE_APP_CLIENT_SECRET,
 				grant_type: 'client_credentials',
 			});
-			this.access_token = await response.data.access_token;
+			await this.$store.dispatch('setAccessToken', response.data.access_token);
 			await this.getTop10Games();
 			await this.getTop10Streams();
 			this.loading = false;
@@ -96,43 +93,32 @@ export default {
 			console.log(err);
 		}
 	},
+	computed: {
+		authHeaders() {
+			return {
+				Authorization: `Bearer ${this.$store.getters['getAccessToken']}`,
+				'Client-Id': process.env.VUE_APP_CLIENT_ID,
+			};
+		},
+
+		getGames() {
+			return this.$store.getters['getGames'];
+		},
+
+		getChannels() {
+			return this.$store.getters['getChannels'];
+		},
+	},
 	methods: {
 		// Get Top 10 Games
-		async getTop10Games() {
-			try {
-				this.pagination = {};
-				const response = await axios.get(
-					`https://api.twitch.tv/helix/games/top`,
-					{
-						headers: {
-							Authorization: `Bearer ${this.access_token}`,
-							'Client-Id': process.env.VUE_APP_CLIENT_ID,
-						},
-					}
-				);
-				this.gamesData = response.data.data.splice(0, 10);
-			} catch (err) {
-				console.log(err);
-			}
+		getTop10Games() {
+			this.pagination = {};
+			this.$store.dispatch('setTop10Games');
 		},
 
 		// Get Top 10 Streams
 		async getTop10Streams() {
-			try {
-				this.pagination = {};
-				const response = await axios.get(
-					`https://api.twitch.tv/helix/streams`,
-					{
-						headers: {
-							Authorization: `Bearer ${this.access_token}`,
-							'Client-Id': process.env.VUE_APP_CLIENT_ID,
-						},
-					}
-				);
-				this.streamsData = response.data.data.splice(0, 10);
-			} catch (err) {
-				console.log(err);
-			}
+			this.$store.dispatch('setTop10Channels');
 		},
 
 		// Clear Search
@@ -153,13 +139,13 @@ export default {
 
 			if (!loadMore) {
 				this.pagination = {};
-				this.gamesData = [];
-				this.streamsData = [];
+				this.$store.dispatch('setGames', []);
+				this.$store.dispatch('setChannels', []);
 			}
 
-			if (search_form_data.search_type == 'game') {
+			if (search_form_data.type == 'game') {
 				try {
-					const params = { query: search_form_data.search_keyword };
+					const params = { query: search_form_data.keyword };
 					if (loadMore) {
 						params.after = this.pagination.cursor;
 					}
@@ -167,17 +153,20 @@ export default {
 						`https://api.twitch.tv/helix/search/categories`,
 						{
 							params: params,
-							headers: {
-								Authorization: `Bearer ${this.access_token}`,
-								'Client-Id': process.env.VUE_APP_CLIENT_ID,
-							},
+							headers: this.authHeaders,
 						}
 					);
 
-					if (!loadMore) this.gamesData = response.data.data;
-					else this.gamesData = this.gamesData.concat(response.data.data);
+					if (!loadMore) {
+						await this.$store.dispatch('setGames', response.data.data);
+					} else {
+						const gameData = this.$store.getters['getGames'].concat(
+							response.data.data
+						);
+						await this.$store.dispatch('setGames', gameData);
+					}
 
-					this.gameListTitle = `Games: ${search_form_data.search_keyword}`;
+					this.gameListTitle = `Games: ${search_form_data.keyword}`;
 					if (response.data.pagination)
 						this.pagination = response.data.pagination;
 
@@ -186,11 +175,12 @@ export default {
 					console.log(err);
 				}
 			}
-			if (search_form_data.search_type == 'channel') {
+
+			if (search_form_data.type == 'channel') {
 				try {
 					const params = {
-						query: search_form_data.search_keyword,
-						live_only: search_form_data.search_status ? true : false,
+						query: search_form_data.keyword,
+						live_only: search_form_data.status ? true : false,
 					};
 					if (loadMore) {
 						params.after = this.pagination.cursor;
@@ -199,17 +189,20 @@ export default {
 						`https://api.twitch.tv/helix/search/channels`,
 						{
 							params: params,
-							headers: {
-								Authorization: `Bearer ${this.access_token}`,
-								'Client-Id': process.env.VUE_APP_CLIENT_ID,
-							},
+							headers: this.authHeaders,
 						}
 					);
 
-					if (!loadMore) this.streamsData = response.data.data;
-					else this.streamsData = this.streamsData.concat(response.data.data);
+					if (!loadMore) {
+						await this.$store.dispatch('setChannels', response.data.data);
+					} else {
+						const gameData = this.$store.getters['getChannels'].concat(
+							response.data.data
+						);
+						await this.$store.dispatch('setChannels', gameData);
+					}
 
-					this.streamListTitle = `Streams: ${search_form_data.search_keyword}`;
+					this.streamListTitle = `Streams: ${search_form_data.keyword}`;
 					if (response.data.pagination)
 						this.pagination = response.data.pagination;
 

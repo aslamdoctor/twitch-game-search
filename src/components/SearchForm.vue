@@ -9,17 +9,17 @@
 			<input
 				class="border border-orange-700 w-full p-3 rounded-md search-box"
 				type="text"
-				name="search_keyword"
-				v-model="search_form_data.search_keyword"
+				name="keyword"
+				v-model="search_form_data.keyword"
 				required
 			/>
 		</div>
 		<div class="basis-1/4 mb-4 lg:mb-0">
 			<label class="block mb-1 lg:mb-3" for="">Type</label>
 			<select
-				name="search_type"
+				name="type"
 				class="border border-orange-700 w-full p-3 rounded-md"
-				v-model="search_form_data.search_type"
+				v-model="search_form_data.type"
 			>
 				<option value="game">Game / Category</option>
 				<option value="channel">Channel</option>
@@ -28,10 +28,10 @@
 		<div class="basis-1/4 mb-4 lg:mb-0">
 			<label class="block mb-1 lg:mb-3" for="">Status</label>
 			<select
-				name="search_status"
-				v-model="search_form_data.search_status"
+				name="status"
+				v-model="search_form_data.status"
 				class="border border-orange-700 w-full p-3 rounded-md"
-				:disabled="search_form_data.search_type === 'game'"
+				:disabled="search_form_data.type === 'game'"
 			>
 				<option value="" selected>Any</option>
 				<option value="1">Live Only</option>
@@ -61,18 +61,18 @@ export default {
 	data() {
 		return {
 			search_form_data: {
-				search_keyword: '',
-				search_type: 'game',
-				search_status: '',
+				keyword: '',
+				type: 'game',
+				status: '',
 			},
 		};
 	},
 	watch: {
 		clearSearch() {
 			this.search_form_data = {
-				search_keyword: '',
-				search_type: 'game',
-				search_status: '',
+				keyword: '',
+				type: 'game',
+				status: '',
 			};
 		},
 	},
